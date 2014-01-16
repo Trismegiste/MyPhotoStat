@@ -1,0 +1,13 @@
+{
+    "name": "trismegiste/photo-stat",
+    "description": "stat on my photo",
+    "authors": [
+        {
+            "name": "Trismegiste",
+            "email": "flo@trismegiste.net"
+        }
+    ],
+    "require": {
+
+    }
+}
