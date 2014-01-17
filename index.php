@@ -9,12 +9,26 @@ $cursor->name('*.CR2')
         ->in($rootDir);
 
 $maxIndexPerDay = [];
+$handle = fopen('stat.csv', 'w');
+fputcsv($handle, ['timeIndex', 'Speed', 'Aperture', 'ISO', 'Focal']);
+
 foreach ($cursor as $fch) {
     $matches = [];
     if (preg_match('#_(\d+)\.CR2#i', $fch->getBasename(), $matches)) {
         $photoIndex = $matches[1];
         $stat = @exif_read_data($fch);
-        $photoTime = substr($stat['DateTimeOriginal'], 0, 10);
+        //file_put_contents('exif.txt', print_r($stat,true));die();
+        $timeIndex = $stat['DateTimeOriginal'];
+
+        fputcsv($handle, [
+            $timeIndex,
+            1 / eval("return " . $stat['ExposureTime'] . ";"),
+            eval("return " . $stat['FNumber'] . ";"),
+            $stat['ISOSpeedRatings'],
+            eval("return " . $stat['FocalLength'] . ';')
+        ]);
+
+        $photoTime = substr($timeIndex, 0, 10);
         if (!array_key_exists($photoTime, $maxIndexPerDay)) {
             $maxIndexPerDay[$photoTime] = $photoIndex;
         } else {
@@ -22,6 +36,7 @@ foreach ($cursor as $fch) {
         }
     }
 }
+fclose($handle);
 
 ksort($maxIndexPerDay);
 
