@@ -17,16 +17,27 @@ $cursor->name('*.CR2')
         ->files()
         ->in($rootDir);
 
+// for each entry :
 foreach ($cursor as $fch) {
     $stat = @exif_read_data($fch);
+
+    // there are metadatas :
     if (array_key_exists(EXIF_META, $stat)) {
+
+        $timeIndex = $stat['DateTimeOriginal'];
+
         $tree = simplexml_load_string($stat[EXIF_META]);
         $tree->registerXPathNamespace('xmp', 'http://ns.adobe.com/xap/1.0/');
         $val = $tree->xpath('//xmp:Rating');
+
+        // if there is a xml rating :
         if (count($val)) {
-            $rating = $val[0];
+            $rating = (string) $val[0];
             if ($rating >= $threshold) {
-                echo $fch . '=' . $rating . PHP_EOL;
+                echo $fch . ' ' . str_repeat('*', $rating) . PHP_EOL;
+                $filename = preg_replace('#[^\d]#', '-', $timeIndex);
+                // copy the picture in the target directory with a new name
+                copy($fch, $targetDir . DIRECTORY_SEPARATOR . 'IMG_' . $rating . '_' . $filename . '.CR2');
             }
         }
     }
